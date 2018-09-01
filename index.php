@@ -1,5 +1,48 @@
 <?php
+
     require_once "config.php";
+    use Database\Sql;
+    use User\User;
+
+    $sql = new Sql();
+
+    //Criando
+    $user = new User();
+    $user->create($_POST['nome'], $_POST['email'], $_POST['telefone']);
+
+    //Lista
+    $list = User::list();
+
+    //Update
+    $user = new User();
+    $user->create();
+    $user->getUser($_GET['id']);
+    $user->update();
+    $user->delete();
+
+    if(isset($_POST['post']))
+    {   
+        $results = $sql->query('INSERT INTO tb_pessoa(nome, email, telefone) VALUES(:nome, :email, :telefone)', [
+            ':nome'=>$_POST['nome'],
+            ':email'=>$_POST['email'],
+            ':telefone'=>$_POST['telefone']
+        ]);
+
+        echo "<pre>";
+
+        if(isset($results) && count($results) > 0)
+        {
+            $GLOBALS['success'] =  "Sucesso! :)";
+        } else 
+        {
+            $GLOBALS['Error'] = "Erro";
+        }
+
+    } 
+
+     //Listagem
+     $GLOBALS['list'] = $sql->select("SELECT * FROM tb_pessoa");
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -22,37 +65,15 @@
 
                 <h1 class="h1 text-center">Crud com PHP Puro</h1>
 
-                <?php 
-
-                    if(isset($_GET['success'])){
-                        $success = $_GET['success'];
-                        echo $success;
+                <?php   
+                    if(isset($GLOBALS['success']))
+                    {
+                        echo "<div class='alert alert-success'>". $GLOBALS['success'] ."</div>";
                     }
-
-                    if(isset($_GET['error'])){
-                        $error = $_GET['error'];
-                        echo $error;
+                    if(isset($GLOBALS['error']))
+                    {
+                        echo "<div class='alert alert-success'>". $GLOBALS['error'] ."</div>";
                     }
-
-                    if(isset($_POST['post']))
-                    {   
-
-                        $sql = $pdo->prepare('INSERT INTO tb_pessoa(nome, email, telefone) VALUES(:nome, :email, :telefone)');
-
-                        $sql->bindParam(':nome', $_POST['nome']);
-                        $sql->bindParam(':email', $_POST['email']);
-                        $sql->bindParam(':telefone', $_POST['telefone']);
-
-                        if($sql->execute())
-                        {
-                            header('Location: index.php');                 
-                        } else 
-                        {
-                            echo "<div class='alert alert-danger'> Erro! </div>";
-                        }
-
-                    } 
-
                 ?>
 
                 <label for="nome">Nome</label>
@@ -81,27 +102,22 @@
                 </thead>
                 <tbody>
                         <?php 
-                          
-                            $sql = $pdo->prepare('SELECT * FROM tb_pessoa');
-                            $sql->execute();
 
-                            $delete = $pdo->prepare('DELETE * FROM tb_pessoa where id = :id');
+                                if(count($GLOBALS['list']) > 0)
+                                {
+                                    foreach($GLOBALS['list'] as $data)
+                                    {   
+                                        echo "<tr>";
+                                        echo "<td>" . $data['id'] . "</td>";  
+                                        echo "<td>" . $data['nome'] . "</td>";    
+                                        echo "<td>" . $data['email'] . "</td>";    
+                                        echo "<td>" . $data['telefone'] . "</td>";  
+                                        echo "<td>" . "<a class='btn btn-primary' href=atualizar.php?id=" . $data['id'] . "> Atualizar </a>" . "<a class='btn btn-danger' href=delete.php?id=" . $data['id'] . "> Deletar </a>"  . "</td>";
+                                        echo "</tr>";
+                                    }    
+                                }
 
-                            $results = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-                            if(count($results) > 0)
-                            {
-                                foreach($results as $data)
-                                {   
-                                    echo "<tr>";
-                                    echo "<td>" . $data['id'] . "</td>";  
-                                    echo "<td>" . $data['nome'] . "</td>";    
-                                    echo "<td>" . $data['email'] . "</td>";    
-                                    echo "<td>" . $data['telefone'] . "</td>";  
-                                    echo "<td>" . "<a class='btn btn-primary' href=atualizar.php?id=" . $data['id'] . "> Atualizar </a>" . "<a class='btn btn-danger' href=delete.php?id=" . $data['id'] . "> Deletar </a>"  . "</td>";
-                                    echo "</tr>";
-                                }    
-                            }
+                            
                         ?>
                      
                 </tbody>
