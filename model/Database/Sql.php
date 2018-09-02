@@ -2,7 +2,7 @@
 
 namespace Database;
 
-class Sql
+class Sql extends \Model
 {
 
     private $connection;

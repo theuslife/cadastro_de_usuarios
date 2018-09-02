@@ -1,13 +1,10 @@
 <?php
 
-namespace User;
+namespace UserModel;
 use Database\Sql;
 
-class User
+class User extends \Model
 {
-    private $nome;
-    private $success = false;
-    private $error = false;
 
     public function create($nome, $email, $telefone)
     {
@@ -33,14 +30,18 @@ class User
 
     }
 
-    public static function getUser($id)
+    public function getUser($id)
     {
 
         $sql = new Sql();
         $result = $sql->select('SELECT * FROM tb_pessoa WHERE id = :id', [
             ':id'=>$id
         ]);
-        return $result;
+
+        if(count($result) > 0)
+        {
+            $this->setValues($result[0]);
+        }
 
     }
 
@@ -48,9 +49,19 @@ class User
     {
         $sql = new Sql();
         $select->select('UPDATE tb_pessoa SET(nome = :nome, email = :email, telefone = :telefone) WHERE id = :id', [
-            ':nome' => $this->nome(),
-            ':email' => $this->email(),
-            ':telefone' => $this->telefone()
+            ':id'=>$this->getid(),
+            ':nome' => $this->getnome(),
+            ':email' => $this->getemail(),
+            ':telefone' => $this->gettelefone()
+        ]);
+    }
+
+    public function delete()
+    {
+        $sql = new Sql();
+        $data = $this->getValues();
+        $sql->select('DELETE * FROM tb_pessoa WHERE id = :id', [
+            ':id'=>$data['id']
         ]);
     }
 
