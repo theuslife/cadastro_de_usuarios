@@ -30,7 +30,7 @@ class User extends \Model
 
     }
 
-    public function getUser($id)
+    public static function getUser($id)
     {
 
         $sql = new Sql();
@@ -40,20 +40,43 @@ class User extends \Model
 
         if(count($result) > 0)
         {
-            $this->setValues($result[0]);
+            return $result[0];
         }
 
     }
 
-    public function update()
+    public function update($nome, $email, $telefone)
     {
-        $sql = new Sql();
-        $select->select('UPDATE tb_pessoa SET(nome = :nome, email = :email, telefone = :telefone) WHERE id = :id', [
-            ':id'=>$this->getid(),
-            ':nome' => $this->getnome(),
-            ':email' => $this->getemail(),
-            ':telefone' => $this->gettelefone()
-        ]);
+        
+        //Validação
+        $user = User::getUser($this->getid());
+        
+        if($nome == $user['nome'] && $email == $user['email'] && $telefone == $user['telefone'])
+        {
+            header('Location: ../view/update.php?id=' . $this->getid());    
+        } else 
+        {
+            $sql = new Sql();
+            $result = $sql->query('UPDATE tb_pessoa SET nome = :nome, email = :email, telefone = :telefone WHERE id = :id', [
+                ':id'=>$this->getid(),
+                ':nome' => $nome,
+                ':email' => $email,
+                ':telefone' => $telefone
+            ]);
+    
+            if(count($result) > 0)
+            {
+                $this->setData($result);
+                echo "<script>alert('Dados atualizados com sucesso!')</script>"; 
+                header('Location: ../public/index.php'); 
+              
+            } else 
+            {
+                echo "<script>alert('Erro na atualização de dados!')</script>";  
+                header('Location: ../view/update.php?id=' . $this>getid());
+            }
+        }
+
     }
 
     public function delete()

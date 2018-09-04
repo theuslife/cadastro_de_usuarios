@@ -16,7 +16,7 @@ class Model
                 break;
             
             case 'set':
-                $this->values[$lastName] = $args;
+                $this->values[$lastName] = $args[0];
                 break;
 
         }
@@ -27,7 +27,8 @@ class Model
     {
         foreach($data as $index => $element)
         {
-            $this->{'set'.$index}{$element};
+            //Criando um método
+            $this->{"set".$index}($element);
         }
 
     }
