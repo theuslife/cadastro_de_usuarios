@@ -45,47 +45,105 @@ class User extends \Model
 
     }
 
-    public function update($nome, $email, $telefone)
+    public function update($data = array())
     {
         
-        //Validação
+        //Pegando o usuário cadastrado no banco
         $user = User::getUser($this->getid());
-        
-        if($nome == $user['nome'] && $email == $user['email'] && $telefone == $user['telefone'])
+
+        //Validando erros
+        $msg = User::validateError($data, $user);
+
+        if(!empty($msg))
         {
-            header('Location: ../view/update.php?id=' . $this->getid());    
-        } else 
+            $result = http_build_query(['msg' => $msg, 'id' => $this->getid()]);
+            header('Location: ../view/update.php?' . $result);
+        }
+
+        else 
         {
             $sql = new Sql();
             $result = $sql->query('UPDATE tb_pessoa SET nome = :nome, email = :email, telefone = :telefone WHERE id = :id', [
                 ':id'=>$this->getid(),
-                ':nome' => $nome,
-                ':email' => $email,
-                ':telefone' => $telefone
+                ':nome' => $data['nome'],
+                ':email' => $data['email'],
+                ':telefone' => $data['telefone']
             ]);
     
             if(count($result) > 0)
             {
                 $this->setData($result);
-                echo "<script>alert('Dados atualizados com sucesso!')</script>"; 
-                header('Location: ../public/index.php'); 
-              
-            } else 
-            {
-                echo "<script>alert('Erro na atualização de dados!')</script>";  
-                header('Location: ../view/update.php?id=' . $this>getid());
+                $msg = User::getSuccess("Cadastro do usuário " . $data['nome'] . " atualizado com sucesso!");
+                header('Location: ../public/index.php?msg=' . $msg); 
             }
         }
 
     }
 
-    public function delete()
+    public function delete($id)
     {
         $sql = new Sql();
-        $data = $this->getValues();
-        $sql->select('DELETE * FROM tb_pessoa WHERE id = :id', [
-            ':id'=>$data['id']
+        $user = User::getUser($id);
+        $sql->select('DELETE FROM tb_pessoa WHERE id = :id', [
+            ':id'=>$user['id']
         ]);
+      
+    }
+
+    public static function getError($msg)
+    {
+
+        return "<div class='alert alert-danger'>$msg</div>";
+
+    }
+
+    public static function getSuccess($msg)
+    {
+       return "<div class='alert alert-success'>$msg</div>"; 
+    }
+
+    public static function validateError($data = array(), $user = null)
+    {
+
+        if($user != null)
+        {
+            if($data['nome'] == $user['nome'] && $data['email'] == $user['email'] && $data['telefone'] == $user['telefone'])
+            {
+                return User::getError('Dados enviados são os mesmos já cadastrados');
+            } 
+        } 
+
+        if(empty($data['nome']))
+        {
+            return User::getError('Erro, digite seu nome!');
+        } 
+
+        else if(empty($data['email']))
+        {
+            return User::getError('Erro, digite seu email!');
+        } 
+
+        else if(empty($data['telefone']))
+        {
+            return User::getError('Erro, digite seu telefone!');
+        }
+
+        else if(strlen($data['telefone']) < 10)
+        {
+            return User::getError('Telefone incorreto, digite novamente');
+        }     
+        else 
+        {
+            $users = User::list();
+            foreach($users as $user)
+            {
+                if($data['email'] == $user['email'])
+                {
+                    return User::getError('Email já cadastrado no sistema');
+                }
+            }
+        }
+
     }
 
 }

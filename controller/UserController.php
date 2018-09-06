@@ -7,14 +7,20 @@ use UserModel\User;
 if(isset($_POST['post']))
 {
 
-    $user = new User();
-    $user->create($_POST['nome'], $_POST['email'], $_POST['telefone']);
-    if(count($user) > 0)
+    $msg = User::validateError($_POST);
+    if(!empty($msg))
     {
-        header('Location: ../public/index.php');
-    } else 
+         header('Location: ../public/index.php?msg=' . $msg);
+    }
+    else
     {
-        header('Location: ../public/index.php');
+        $user = new User();
+        $user->create($_POST['nome'], $_POST['email'], $_POST['telefone']);
+        if(count($user) > 0)
+        {
+            $msg = User::getSuccess('Usuário criado com sucesso!');
+            header('Location: ../public/index.php?msg=' . $msg);
+        }
     }
 
 }
@@ -27,14 +33,14 @@ function userList()
     {
         $id = $result['id'];
         echo "<tr>";
-        echo "<td>" . $result['id'] . "</td>";
+        echo "<th class='scope'>" . $result['id'] . "</th>";
         echo "<td>" . $result['nome'] . "</td>";
         echo "<td>" . $result['email'] . "</td>";
         echo "<td>" . $result['telefone'] . "</td>";
         echo 
         "<td>" . 
         "   <a href='../view/update.php?id=$id' class='btn btn-primary'>Atualizar</a>
-        <a href='../view/delete.php?id=$id' class='btn btn-danger'>Deletar</a>
+        <a href='../view/delete.php?id=$id' class='btn btn-danger pr-3 pl-3'>Deletar</a>
         " . 
         "</td>";
         echo "</tr>";
@@ -64,13 +70,13 @@ function userListUpdate()
         $GLOBALS['id'] = $_GET['id'];
 
         echo "<label for='nome'>Nome</label>";
-        echo " <input type='text' id='nome' name='nome' class='form-control' value='" . $listUser['nome'] . "'  required/>";
+        echo " <input type='text' id='nome' name='nome' class='form-control' value='" . $listUser['nome'] . "'/>";
 
         echo "<label for='email' class='mt-4'>E-mail</label>";
-        echo " <input type='email' id='email' name='email' class='form-control' value='" . $listUser['email'] . "'  required/>";
+        echo " <input type='email' id='email' name='email' class='form-control' value='" . $listUser['email'] . "'/>";
 
         echo "<label for='telefone' class='mt-4'>Telefone</label>";
-        echo " <input type='text' id='telefone' name='telefone' class='form-control' value='" . $listUser['telefone'] . "'  required/>";
+        echo " <input type='text' id='telefone' name='telefone' class='form-control' value='" . $listUser['telefone'] . "'/>";
 
     }
 
@@ -82,22 +88,25 @@ if(isset($_GET['id']) && is_numeric($_GET['id']))
     $id = (int) $_GET['id'];
     if(isset($_POST['postUpdate']))
     {
-
-        $user = new User();
-        $listUser = User::getUser($id);
-        var_dump($listUser['nome']);
-        var_dump($_POST['nome']);
-  
-        $user->setData($listUser);
-        $user->update($_POST['nome'], $_POST['email'], $_POST['telefone']);
+            $user = new User();
+            $listUser = User::getUser($id);
+            $user->setData($listUser);
+            $user->update($_POST);
     }
 
 }
 
 //Delete
-if(isset($_POST['delete']))
+function delete()
 {
-    echo "Deletado!";
+    if(isset($_GET['id']) && is_numeric($_GET['id']))
+    {
+        $id = $_GET['id'];
+        $user = new User();
+        $user->delete($id); 
+        $msg = User::getSuccess('Usuário deletado!');    
+        header('Location: ../public/index.php?msg=' . $msg);
+    }
 }
 
 ?>
