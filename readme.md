@@ -1,7 +1,5 @@
 ## Sistema Cadastro de Usuários
 
-Website (https://cadastro-de-usuarios.000webhostapp.com)
-
 1° - Foi utilizado neste projeto o Bootstrap 4 para o layout front-end (https://getbootstrap.com/).
 
 2° - A codificação deste projeto foi feita de maneira didática para demonstração de conhecimentos na linguagem PHP.
